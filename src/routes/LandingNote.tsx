@@ -1,33 +1,31 @@
 import { useState } from "react";
-import CodeEditor from "../components/CodeEditor";
 import { Helmet } from "react-helmet";
+// components
+import CodeEditor from "../components/CodeEditor";
+import Question from "../components/Question";
 
-// 1. The 'Code Editor Window' component
-// 2. The 'Output' components
+// 1. Reading and parsing selected txt file
+// 2. Sending question props to the 'Question' components
+// 3. Sending solution props to the 'CodeEditor' components
 
 function LandingNote() {
-    const [codeParam, setCodeParam] = useState("");
+    const [codeParam, setCodeParam] = useState("n");
+    const question = `자연수 <code>n</code>이 매개변수로 주어집니다. <code>n</code>을 <code>x</code>로 나눈 나머지가 1이 되도록 하는 
+        가장 작은 자연수 <code>x</code>를 return 하도록 solution 함수를 완성해주세요. 답이 항상 존재함은 증명될 수 있습니다.`;
     const defaultCode = `const solution = (${codeParam}) => {
-  let answer = "";
-  // Write the solution here.
+  let answer = 0;
 
   return answer;
 };
 `;
-
     const [code, setCode] = useState(defaultCode);
 
     return (<>
         <Helmet>
             <title>title...</title>
         </Helmet>
-        <div className="h-4 w-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500">hey</div>
-
-        <div className="flex flex-row space-x-4 items-start px-4 py-4">
-            <div className="flex flex-col w-full h-full justify-start items-end">
-                <CodeEditor code={code} />
-            </div>
-        </div>
+        <Question question={question} />
+        <CodeEditor code={code} />
     </>);
 };
 

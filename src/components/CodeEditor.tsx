@@ -1,17 +1,18 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import CodeMirror from '@uiw/react-codemirror';
 import { ViewUpdate } from '@codemirror/view';
 import { javascript } from '@codemirror/lang-javascript';
 import { githubDark } from '@uiw/codemirror-theme-github';
-import React, { useEffect, useState } from 'react';
 import OutputWindow from './OutputWindow';
 import OutputDetails from './OutputDetails';
 import useKeyPress from '../hooks/useKeyPress';
-import axios from 'axios';
 
 const extensions = [javascript({ jsx: true })];
 const RAPID_API_URL = process.env.REACT_APP_RAPID_API_URL;
 const RAPID_API_HOST = process.env.REACT_APP_RAPID_API_HOST;
 const RAPID_API_KEY = process.env.REACT_APP_RAPID_API_KEY;
+const CONTENT_TYPE = "application/json";
 
 
 interface ICodeMirror {
@@ -36,17 +37,18 @@ function CodeEditor({code} : ICodeMirror) {
             console.log("ctrlPress", ctrlPress);
             handleCompile();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ctrlPress, enterPress]);
-    const handleChange = React.useCallback((value :string, viewUpdate: ViewUpdate) => {
+    
+    const handleCodeChange = React.useCallback((value :string, viewUpdate: ViewUpdate) => {
         setSolutionCode(value);
     }, []);
 
     const handleCompile = () => {
         const confirmAnswers = `
-        ${solutionCode}
-        console.log(solution(1, 2));
+            ${solutionCode}
+            console.log(solution(12));
         `;
-        console.log("code", solutionCode);
         setProcessing(true);
         const formData = {
             language_id: 63,
@@ -55,11 +57,11 @@ function CodeEditor({code} : ICodeMirror) {
         };
         const options = {
             method: "POST",
-            url: `${RAPID_API_URL}/submissions`,
+            url: `${RAPID_API_URL}`,
             params: { base64_encoded: "true", fields: "*" },
             headers: {
-                "content-type": "application/json",
-                "Content-Type": "application/json",
+                "content-type": CONTENT_TYPE,
+                "Content-Type": CONTENT_TYPE,
                 "X-RapidAPI-Host": RAPID_API_HOST,
                 "X-RapidAPI-Key": RAPID_API_KEY,
             },
@@ -69,7 +71,6 @@ function CodeEditor({code} : ICodeMirror) {
         axios
             .request(options)
             .then(function (response) {
-                console.log("res.data", response.data);
                 const token = response.data.token;
                 checkStatus(token);
             })
@@ -83,7 +84,7 @@ function CodeEditor({code} : ICodeMirror) {
     const checkStatus = async (token: string) => {
         const options = {
             method: "GET",
-            url: `${RAPID_API_URL}/submissions/${token}`,
+            url: `${RAPID_API_URL}/${token}`,
             params: { base64_encoded: "true", fields: "*" },
             headers: {
                 "X-RapidAPI-Host": RAPID_API_HOST,
@@ -104,7 +105,6 @@ function CodeEditor({code} : ICodeMirror) {
             } else {
                 setProcessing(false)
                 setOutputDetails(response.data)
-                console.log('response.data', response.data)
                 return
             }
         } catch (err) {
@@ -112,13 +112,14 @@ function CodeEditor({code} : ICodeMirror) {
             setProcessing(false);
         }
     };
+
     return (<>
         <CodeMirror
             value={solutionCode}
             height="100%"
             theme={githubDark}
             extensions={extensions}
-            onChange={handleChange}
+            onChange={handleCodeChange}
         />
         <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
             <OutputWindow outputDetails={outputDetails} />
